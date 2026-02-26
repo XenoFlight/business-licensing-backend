@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח בקרה | מערכת רישוי עסקים</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Config for Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .stat-card {
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .leaflet-container { z-index: 10 !important; font-family: inherit; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen antialiased">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Right side: Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="bg-brand-100 text-brand-700 p-2 rounded-lg">
+                        <i class="fa-solid fa-building-shield text-xl"></i>
+                    </div>
+                    <div>
+                        <a href="dashboard.html" class="text-lg font-bold text-slate-900 tracking-tight">מערכת רישוי עסקים</a>
+                        <div class="text-xs text-slate-500 font-medium">מועצה אזורית יואב</div>
+                    </div>
+                </div>
+
+                <!-- Center: Navigation -->
+                <nav class="hidden md:flex space-x-reverse space-x-2">
+                    <a href="dashboard.html" class="px-3 py-2 rounded-lg text-sm font-medium bg-brand-50 text-brand-700 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie"></i> לוח בקרה
+                    </a>
+                    <a href="businesses.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-store"></i> רשימת עסקים
+                    </a>
+                    <a href="inspection.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-check"></i> ביקורת חדשה
+                    </a>
+                    <span id="admin-link-placeholder"></span>
+                </nav>
+
+                <!-- Left side: User Profile & Actions -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 border-r border-slate-200 pr-4">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <span id="user-name" class="text-sm font-medium text-slate-700">שלום, משתמש</span>
+                    </div>
+                    <button onclick="logout()" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> יציאה
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- Welcome Section -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-slate-900">סקירת נתונים יומית</h1>
+            <p class="text-slate-500 text-sm mt-1">ברוכים הבאים למערכת רישוי עסקים. כאן תוכלו לראות סיכום של הנתונים במערכת.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Stats Cards -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">סה"כ עסקים</p>
+                        <h3 class="text-3xl font-bold text-slate-900 mt-1" id="total-businesses">-</h3>
+                    </div>
+                    <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                        <i class="fa-solid fa-store text-xl"></i>
+                    </div>
+                </div>
+                <div class="text-xs text-slate-400">רשומים במערכת</div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">עסקים פעילים</p>
+                        <h3 class="text-3xl font-bold text-green-600 mt-1" id="active-businesses">-</h3>
+                    </div>
+                    <div class="p-3 bg-green-50 text-green-600 rounded-lg">
+                        <i class="fa-solid fa-check-circle text-xl"></i>
+                    </div>
+                </div>
+                <div class="text-xs text-slate-400">בעלי רישיון בתוקף</div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">בטיפול / חידוש</p>
+                        <h3 class="text-3xl font-bold text-amber-500 mt-1" id="pending-businesses">-</h3>
+                    </div>
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-lg">
+                        <i class="fa-solid fa-clock text-xl"></i>
+                    </div>
+                </div>
+                <div class="text-xs text-slate-400">ממתינים לטיפול</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <h2 class="font-bold text-slate-800">פעולות מהירות</h2>
+                </div>
+                <div class="p-6 grid gap-4">
+                    <a href="inspection.html" class="flex items-center p-4 border border-slate-200 rounded-xl hover:border-brand-300 hover:bg-brand-50 transition-all group">
+                        <div class="bg-brand-100 text-brand-600 p-3 rounded-lg group-hover:bg-brand-200 transition-colors">
+                            <i class="fa-solid fa-clipboard-check text-xl"></i>
+                        </div>
+                        <div class="mr-4">
+                            <h3 class="font-bold text-slate-800 group-hover:text-brand-700">ביצוע ביקורת חדשה</h3>
+                            <p class="text-sm text-slate-500">פתיחת טופס ביקורת לעסק קיים או חדש</p>
+                        </div>
+                    </a>
+                    
+                    <a href="map.html" class="flex items-center p-4 border border-slate-200 rounded-xl hover:border-brand-300 hover:bg-brand-50 transition-all group">
+                        <div class="bg-slate-100 text-slate-600 p-3 rounded-lg group-hover:bg-slate-200 transition-colors">
+                            <i class="fa-solid fa-map-location-dot text-xl"></i>
+                        </div>
+                        <div class="mr-4">
+                            <h3 class="font-bold text-slate-800 group-hover:text-brand-700">צפייה במפת העסקים</h3>
+                            <p class="text-sm text-slate-500">תצוגה גיאוגרפית של כל העסקים במועצה</p>
+                        </div>
+                    </a>
+
+                    <a href="calendar.html" class="flex items-center p-4 border border-slate-200 rounded-xl hover:border-brand-300 hover:bg-brand-50 transition-all group">
+                        <div class="bg-slate-100 text-slate-600 p-3 rounded-lg group-hover:bg-slate-200 transition-colors">
+                            <i class="fa-solid fa-calendar-days text-xl"></i>
+                        </div>
+                        <div class="mr-4">
+                            <h3 class="font-bold text-slate-800 group-hover:text-brand-700">יומן ביקורות</h3>
+                            <p class="text-sm text-slate-500">צפייה בלוח הזמנים וסנכרון עם Outlook</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Updates -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <h2 class="font-bold text-slate-800">עדכונים אחרונים</h2>
+                </div>
+                <div class="p-6">
+                    <ul class="space-y-4">
+                        <li class="flex gap-3 items-start">
+                            <div class="mt-1 w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">המערכת עודכנה לאחרונה</p>
+                                <p class="text-xs text-slate-500">לפני 2 ימים</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-3 items-start">
+                            <div class="mt-1 w-2 h-2 rounded-full bg-brand-500 shrink-0"></div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">נוספה אפשרות לסנכרון יומן Outlook</p>
+                                <p class="text-xs text-slate-500">חדש במערכת</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-3 items-start">
+                            <div class="mt-1 w-2 h-2 rounded-full bg-brand-500 shrink-0"></div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">ממשק מפה חדש זמין</p>
+                                <p class="text-xs text-slate-500">שיפורי ביצועים ותצוגה</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center gap-2">
+            <div class="text-sm text-slate-500 font-medium">
+                &copy; 2026 מערכת רישוי עסקים - מועצה אזורית יואב. כל הזכויות שמורות.
+            </div>
+            <div class="text-xs text-slate-400">
+                פותח עבור מחלקת רישוי עסקים
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 1. בדיקת התחברות
+        const token = localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
+        
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                document.getElementById('user-name').textContent = `שלום, ${user.fullName}`;
+                if (user.role === 'admin') {
+                    const adminLink = document.createElement('a');
+                    adminLink.href = 'admin-dashboard.html';
+                    adminLink.innerHTML = '<i class="fa-solid fa-user-shield"></i> פאנל ניהול';
+                    adminLink.className = 'px-3 py-2 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 transition-colors flex items-center gap-2';
+                    document.getElementById('admin-link-placeholder').appendChild(adminLink);
+                }
+            } catch (e) {
+                console.error("Failed to parse user data from localStorage, logging out.", e);
+                logout();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // 2. שליפת נתונים מהשרת
+        async function fetchBusinesses() {
+            try {
+                const response = await fetch('/api/businesses', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.status === 401) {
+                    logout(); // טוקן פג תוקף
+                    return;
+                }
+
+                const businesses = await response.json();
+                
+                // Update Stats
+                document.getElementById('total-businesses').textContent = businesses.length;
+                
+                const activeCount = businesses.filter(b => b.status === 'פעיל' || b.status === 'רישיון' || b.status === 'היתר זמני').length;
+                document.getElementById('active-businesses').textContent = activeCount;
+
+                const pendingCount = businesses.filter(b => b.status && (b.status.includes('בטיפול') || b.status.includes('חידוש'))).length;
+                document.getElementById('pending-businesses').textContent = pendingCount;
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // טעינה ראשונית
+        fetchBusinesses();
+    </script>
+</body>
+</html>
