@@ -99,7 +99,7 @@
                         </div>
                         <span id="user-name" class="text-sm font-medium text-slate-700">שלום, משתמש</span>
                     </div>
-                    <button onclick="logout()" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
+                    <button id="logout-button" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> יציאה
                     </button>
                 </div>
@@ -131,88 +131,6 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script>
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-        
-        if (!token) {
-            window.location.href = 'login.html';
-        }
-
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                document.getElementById('user-name').textContent = `שלום, ${user.fullName}`;
-                if (user.role === 'admin') {
-                    const adminLink = document.createElement('a');
-                    adminLink.href = 'admin-dashboard.html';
-                    adminLink.innerHTML = '<i class="fa-solid fa-user-shield"></i> פאנל ניהול';
-                    adminLink.className = 'px-3 py-2 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 transition-colors flex items-center gap-2';
-                    document.getElementById('admin-link-placeholder').appendChild(adminLink);
-                }
-            } catch (e) {
-                console.error("Failed to parse user data from localStorage, logging out.", e);
-                logout();
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-
-        let map;
-        let businessesData = [];
-
-        function initMap() {
-            const defaultCenter = [31.6, 34.8];
-            map = L.map('map').setView(defaultCenter, 11);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            addAllMarkers();
-        }
-
-        async function addAllMarkers() {
-            if (map && businessesData.length > 0) {
-                for (const biz of businessesData) {
-                    addMarkerForBusiness(biz);
-                    if (!biz.latitude || !biz.longitude) {
-                        await new Promise(r => setTimeout(r, 1200)); 
-                    }
-                }
-            }
-        }
-
-        function addMarkerForBusiness(business) {
-            if (!map) return;
-            if (business.latitude && business.longitude) {
-                const latLng = [business.latitude, business.longitude];
-                const marker = L.marker(latLng).addTo(map);
-                const addressDisplay = business.address || business.businessArea || business.street;
-                marker.bindPopup(`<strong>${business.businessName}</strong><br>${addressDisplay}<br><a href="business-details.html?name=${encodeURIComponent(business.businessName)}">פרטים</a>`);
-                return; 
-            }
-        }
-
-        async function fetchBusinesses() {
-            try {
-                const response = await fetch('/api/businesses', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.status === 401) { logout(); return; }
-                businessesData = await response.json();
-                initMap();
-            } catch (e) {
-                console.error('Map error:', e);
-                initMap();
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', fetchBusinesses);
-    </script>
+    <script type="module" src="js/pages/map/index.js"></script>
 </body>
 </html>

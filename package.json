@@ -28,7 +28,6 @@
     "morgan": "^1.10.0",
     "node-ical": "^0.25.4",
     "pg": "^8.11.3",
-    "pg-hstore": "^2.3.4",
     "puppeteer": "^24.37.5",
     "sequelize": "^6.35.1"
   },

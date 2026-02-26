@@ -53,11 +53,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8; 
         }
-        /* Fix Leaflet z-index issues with sticky headers (if map used) */
-        .leaflet-container {
-            z-index: 10 !important;
-            font-family: inherit;
-        }
 
         #calendar {
             background: white;
@@ -104,7 +99,7 @@
                         </div>
                         <span id="user-name" class="text-sm font-medium text-slate-700">שלום, משתמש</span>
                     </div>
-                    <button onclick="logout()" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
+                    <button id="logout-button" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> יציאה
                     </button>
                 </div>
@@ -116,18 +111,8 @@
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-slate-900">יומן ביקורות</h1>
-            <p class="text-slate-500 text-sm mt-1">סנכרון עם יומן ה-Outlook והצגת הסמינר</p>
-        </div>
-
-        <div class="mb-6">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 class="font-bold text-slate-800 mb-3">סנכרון יומן</h2>
-                <div class="flex flex-col lg:flex-row gap-3">
-                    <input type="text" id="ical-url" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="הדבק כאן קישור iCal (לדוגמה: https://outlook.office365.com/.../calendar.ics)">
-                    <button class="bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700 transition-colors" type="button" onclick="loadICal()">טען יומן</button>
-                </div>
-                <p id="ical-feedback" class="mt-3 text-sm text-slate-500"></p>
-            </div>
+            <p class="text-slate-500 text-sm mt-1">סנכרון אוטומטי עם יומן ה-Outlook בכל טעינת דף</p>
+            <p id="ical-feedback" class="text-sm text-slate-500 mt-2">טוען אירועים מהיומן הארגוני...</p>
         </div>
 
         <div id="calendar"></div>
@@ -148,124 +133,6 @@
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/he.js"></script>
-
-    <script>
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-        
-        if (!token) {
-            window.location.href = 'login.html';
-        }
-
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                document.getElementById('user-name').textContent = `שלום, ${user.fullName}`;
-                if (user.role === 'admin') {
-                    const adminLink = document.createElement('a');
-                    adminLink.href = 'admin-dashboard.html';
-                    adminLink.innerHTML = '<i class="fa-solid fa-user-shield"></i> פאנל ניהול';
-                    adminLink.className = 'px-3 py-2 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 transition-colors flex items-center gap-2';
-                    document.getElementById('admin-link-placeholder').appendChild(adminLink);
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-
-        const ICAL_URL_PATTERN = /\.ics(?:$|\?)/i;
-
-        function setIcalFeedback(message, type = 'info') {
-            const feedback = document.getElementById('ical-feedback');
-            if (!feedback) return;
-
-            feedback.textContent = message || '';
-            feedback.className = 'mt-3 text-sm';
-
-            if (type === 'error') {
-                feedback.classList.add('text-red-600');
-                return;
-            }
-
-            if (type === 'success') {
-                feedback.classList.add('text-emerald-600');
-                return;
-            }
-
-            feedback.classList.add('text-slate-500');
-        }
-
-        function validateIcalUrl(url) {
-            try {
-                const parsed = new URL(url);
-                return parsed.protocol === 'https:' && ICAL_URL_PATTERN.test(parsed.pathname + parsed.search);
-            } catch (error) {
-                return false;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'he',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                events: [] // loaded dynamically later
-            });
-            calendar.render();
-            window.calendarInstance = calendar;
-        });
-
-        async function loadICal() {
-            const url = document.getElementById('ical-url').value.trim();
-            const button = document.querySelector('#ical-url + button');
-
-            if (!url) {
-                setIcalFeedback('יש להזין קישור iCal.', 'error');
-                return;
-            }
-
-            if (!validateIcalUrl(url)) {
-                setIcalFeedback('הקישור אינו תקין. יש להזין כתובת HTTPS שמכילה קובץ .ics', 'error');
-                return;
-            }
-
-            setIcalFeedback('טוען אירועים מהיומן...', 'info');
-            button.disabled = true;
-            button.textContent = 'טוען...';
-
-            try {
-                const response = await fetch('/api/calendar/ical', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ url })
-                });
-
-                if (response.ok) {
-                    const events = await response.json();
-                    window.calendarInstance.removeAllEvents();
-                    window.calendarInstance.addEventSource(events);
-                    setIcalFeedback(`נטענו ${events.length} אירועים מהיומן.`, 'success');
-                } else {
-                    const errorPayload = await response.json().catch(() => ({}));
-                    setIcalFeedback(errorPayload.message || 'שגיאה בטעינת היומן.', 'error');
-                }
-            } catch (err) {
-                console.error(err);
-                setIcalFeedback('שגיאת תקשורת. נסה שוב מאוחר יותר.', 'error');
-            } finally {
-                button.disabled = false;
-                button.textContent = 'טען יומן';
-            }
-        }
-    </script>
+    <script type="module" src="js/pages/calendar/index.js"></script>
 </body>
 </html>

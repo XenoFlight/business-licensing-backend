@@ -182,6 +182,40 @@ exports.updateBusinessStatus = async (req, res) => {
   }
 };
 
+// @desc    עדכון מיקום עסק
+// @route   PATCH /api/businesses/:id/location
+// @access  Private (Manager/Inspector/Admin)
+exports.updateBusinessLocation = async (req, res) => {
+  try {
+    const { latitude, longitude } = req.body;
+
+    if (typeof latitude !== 'number' || Number.isNaN(latitude) || latitude < -90 || latitude > 90) {
+      return res.status(400).json({ message: 'ערך קו רוחב לא תקין' });
+    }
+
+    if (typeof longitude !== 'number' || Number.isNaN(longitude) || longitude < -180 || longitude > 180) {
+      return res.status(400).json({ message: 'ערך קו אורך לא תקין' });
+    }
+
+    const business = await Business.findByPk(req.params.id);
+
+    if (!business) {
+      return res.status(404).json({ message: 'עסק לא נמצא' });
+    }
+
+    business.latitude = latitude;
+    business.longitude = longitude;
+    await business.save();
+
+    return res.json({
+      message: 'מיקום העסק עודכן בהצלחה',
+      business: serializeBusinessWithStatus(business)
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'שגיאה בעדכון מיקום עסק', error: error.message });
+  }
+};
+
 // @desc    מחיקת עסק
 // @route   DELETE /api/businesses/:id
 // @access  Private (Admin)

@@ -7,7 +7,8 @@ const {
   updateBusiness,
   deleteBusiness,
   getBusinessReports,
-  updateBusinessStatus
+  updateBusinessStatus,
+  updateBusinessLocation
 } = require('../controllers/businessController');
 const { protect, authorize } = require('../middlewares/authMiddleware');
 
@@ -20,6 +21,7 @@ router.route('/')
 
 router.get('/:id/reports', protect, getBusinessReports); // קבלת היסטוריית ביקורות לעסק
 router.patch('/:id/status', protect, authorize('manager', 'inspector', 'admin'), updateBusinessStatus); // עדכון סטטוס עסק
+router.patch('/:id/location', protect, authorize('manager', 'inspector', 'admin'), updateBusinessLocation); // עדכון מיקום עסק
 
 router.route('/:id')
   .get(protect, getBusinessById) // צפייה בפרטי עסק

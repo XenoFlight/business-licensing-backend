@@ -80,7 +80,7 @@
                         </div>
                         <span id="user-name" class="text-sm font-medium text-slate-700">שלום, משתמש</span>
                     </div>
-                    <button onclick="logout()" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
+                    <button id="logout-button" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> יציאה
                     </button>
                 </div>
@@ -129,90 +129,6 @@
         </div>
     </footer>
 
-    <script>
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-
-        if (!token) {
-            window.location.href = 'login.html';
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                document.getElementById('user-name').textContent = user.fullName;
-            } catch (e) { console.error(e); }
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const businessId = urlParams.get('businessId');
-
-        if (!businessId) {
-            alert('שגיאה: לא נבחר עסק.');
-            window.location.href = 'dashboard.html';
-        }
-
-        async function loadReports() {
-            try {
-                // 1. קבלת פרטי העסק (בשביל הכותרת)
-                const bizResponse = await fetch(`/api/businesses/${businessId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (bizResponse.ok) {
-                    const business = await bizResponse.json();
-                    document.getElementById('business-title').textContent = `היסטוריית דו"חות: ${business.businessName}`;
-                }
-
-                // 2. קבלת הדו"חות
-                const reportsResponse = await fetch(`/api/reports/business/${businessId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                const tbody = document.querySelector('#reports-table tbody');
-                tbody.innerHTML = '';
-
-                if (!reportsResponse.ok) throw new Error('Failed to fetch reports');
-                
-                const reports = await reportsResponse.json();
-
-                if (reports.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500">לא נמצאו ביקורות קודמות לעסק זה.</td></tr>';
-                    return;
-                }
-
-                const statusMap = {
-                    'pass': { text: 'עבר', class: 'text-green-600 font-bold' },
-                    'fail': { text: 'נכשל', class: 'text-red-600 font-bold' },
-                    'conditional_pass': { text: 'עבר בתנאי', class: 'text-amber-500 font-bold' }
-                };
-
-                reports.forEach(report => {
-                    const statusInfo = statusMap[report.status] || { text: report.status, class: '' };
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-50 transition-colors";
-                    row.innerHTML = `
-                        <td class="px-6 py-4 text-slate-900">${new Date(report.visitDate).toLocaleDateString('he-IL', { hour: '2-digit', minute: '2-digit' })}</td>
-                        <td class="px-6 py-4 text-slate-600">${report.inspector ? report.inspector.fullName : 'לא ידוע'}</td>
-                        <td class="px-6 py-4 ${statusInfo.class}">${statusInfo.text}</td>
-                        <td class="px-6 py-4 text-slate-600">${report.findings.substring(0, 50)}${report.findings.length > 50 ? '...' : ''}</td>
-                        <td class="px-6 py-4">${report.pdfPath ? `<a href="${report.pdfPath}" target="_blank" class="text-brand-600 hover:underline">צפה בדו"ח</a>` : '-'}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-
-            } catch (error) {
-                console.error(error);
-                document.querySelector('#reports-table tbody').innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-red-500">שגיאה בטעינת הנתונים.</td></tr>';
-            }
-        }
-
-        loadReports();
-    </script>
+    <script type="module" src="js/pages/reports-history/index.js"></script>
 </body>
 </html>

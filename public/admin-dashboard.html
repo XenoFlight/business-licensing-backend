@@ -39,7 +39,6 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .leaflet-container { z-index: 10 !important; font-family: inherit; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen antialiased">
@@ -80,7 +79,7 @@
                         </div>
                         <span id="user-name" class="text-sm font-medium text-slate-700">שלום, משתמש</span>
                     </div>
-                    <button onclick="logout()" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
+                    <button id="logout-button" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> יציאה
                     </button>
                 </div>
@@ -126,140 +125,6 @@
         </div>
     </footer>
 
-    <script>
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-        let user;
-
-        // Auth & Role Check
-        if (!token || !userStr) {
-            window.location.href = 'login.html';
-        } else {
-            user = JSON.parse(userStr);
-            if (user.role !== 'admin') {
-                alert('אין לך הרשאת גישה לדף זה.');
-                window.location.href = 'dashboard.html';
-            }
-            document.getElementById('user-name').textContent = `שלום, ${user.fullName}`;
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-
-        async function fetchPendingUsers() {
-            const tbody = document.querySelector('#pending-users-table tbody');
-            try {
-                const response = await fetch('/api/admin/pending-users', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.status === 401 || response.status === 403) {
-                    logout();
-                    return;
-                }
-
-                const users = await response.json();
-                tbody.innerHTML = '';
-
-                if (users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">אין משתמשים הממתינים לאישור.</td></tr>';
-                    return;
-                }
-
-                users.forEach(pendingUser => {
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-50 transition-colors";
-                    row.id = `user-row-${pendingUser.id}`;
-                    row.innerHTML = `
-                        <td class="px-6 py-4 font-medium text-slate-900">${pendingUser.fullName}</td>
-                        <td class="px-6 py-4 text-slate-600">${pendingUser.email}</td>
-                        <td class="px-6 py-4 text-slate-600">${pendingUser.role}</td>
-                        <td class="px-6 py-4 text-slate-600">${new Date(pendingUser.createdAt).toLocaleDateString('he-IL')}</td>
-                        <td class="px-6 py-4 flex gap-2">
-                            <button class="bg-green-600 text-white px-3 py-1.5 rounded text-xs hover:bg-green-700 transition-colors" onclick="approveUser(${pendingUser.id})">אשר משתמש</button>
-                            <button class="bg-red-500 text-white px-3 py-1.5 rounded text-xs hover:bg-red-600 transition-colors" onclick="denyUser(${pendingUser.id})">דחה</button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-
-            } catch (error) {
-                console.error('Error fetching pending users:', error);
-                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-red-500">שגיאה בטעינת המשתמשים.</td></tr>';
-            }
-        }
-
-        async function approveUser(userId) {
-            const button = document.querySelector(`#user-row-${userId} button`);
-            button.disabled = true;
-            button.textContent = 'מאשר...';
-
-            try {
-                const response = await fetch(`/api/admin/approve/${userId}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'שגיאה באישור המשתמש');
-                }
-                
-                alert('המשתמש אושר בהצלחה!');
-                document.getElementById(`user-row-${userId}`).remove();
-
-                const tbody = document.querySelector('#pending-users-table tbody');
-                if (tbody.children.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500">אין משתמשים הממתינים לאישור.</td></tr>';
-                }
-
-            } catch (error) {
-                console.error('Error approving user:', error);
-                alert(`שגיאה: ${error.message}`);
-                button.disabled = false;
-                button.textContent = 'אשר משתמש';
-            }
-        }
-
-        async function denyUser(userId) {
-            if (!confirm('האם אתה בטוח שברצונך לדחות ולמחוק את המשתמש?')) return;
-
-            const button = document.querySelector(`#user-row-${userId} .deny-btn`);
-            button.disabled = true;
-            button.textContent = '...';
-
-            try {
-                const response = await fetch(`/api/admin/deny/${userId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'שגיאה בדחיית המשתמש');
-                }
-                
-                alert('המשתמש נדחה ונמחק בהצלחה.');
-                document.getElementById(`user-row-${userId}`).remove();
-
-                const tbody = document.querySelector('#pending-users-table tbody');
-                if (tbody.children.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500">אין משתמשים הממתינים לאישור.</td></tr>';
-                }
-
-            } catch (error) {
-                console.error('Error denying user:', error);
-                alert(`שגיאה: ${error.message}`);
-                button.disabled = false;
-                button.textContent = 'דחה';
-            }
-        }
-
-        // Initial Load
-        fetchPendingUsers();
-    </script>
+    <script type="module" src="js/pages/admin-dashboard/index.js"></script>
 </body>
 </html>

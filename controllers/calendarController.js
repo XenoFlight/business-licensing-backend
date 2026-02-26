@@ -2,6 +2,7 @@ const axios = require('axios');
 const ical = require('node-ical');
 
 const ICAL_URL_PATTERN = /\.ics(?:$|\?)/i;
+const FALLBACK_ICAL_URL = 'https://outlook.office365.com/owa/calendar/aabdac5a5e8042328a46761dd7dff9b6@yoav.org.il/cbfd940885de4af8bf9d3e51859d279d4522486375793626553/calendar.ics';
 
 function isValidIcalUrl(url) {
   try {
@@ -12,47 +13,36 @@ function isValidIcalUrl(url) {
   }
 }
 
-// @desc    Fetch and parse an iCal feed from a URL
-// @route   POST /api/calendar/ical
-// @access  Private
+// Returns events from request URL, env default, or hard fallback (in that order).
 exports.getICalEvents = async (req, res) => {
-  const { url } = req.body;
+  const rawUrl = typeof req.body?.url === 'string' ? req.body.url : '';
+  const trimmedInputUrl = rawUrl.trim();
+  const trimmedUrl = trimmedInputUrl || String(process.env.DEFAULT_ICAL_URL || '').trim() || FALLBACK_ICAL_URL;
 
-  if (!url || typeof url !== 'string') {
-    return res.status(400).json({ message: 'יש להזין קישור iCal תקין.' });
+  if (!trimmedUrl) {
+    return res.status(500).json({ message: 'לא הוגדר קישור יומן ברירת מחדל במערכת.' });
   }
 
-  const trimmedUrl = url.trim();
   if (!isValidIcalUrl(trimmedUrl)) {
     return res.status(400).json({ message: 'קישור היומן אינו תקין. יש להזין כתובת HTTPS שמכילה קובץ .ics' });
   }
 
   try {
-    // Use axios to fetch the iCal data from the provided URL
     const response = await axios.get(trimmedUrl, {
-      responseType: 'text' // We need the raw ICS data as a string
+      responseType: 'text'
     });
 
-    // Synchronously parse the ICS data
     const data = ical.sync.parseICS(response.data);
-    const events = [];
-
-    // Loop through the parsed data and format it for FullCalendar
-    for (const k in data) {
-      if (data.hasOwnProperty(k)) {
-        const ev = data[k];
-        if (ev.type === 'VEVENT') {
-          events.push({
-            title: ev.summary,
-            start: ev.start,
-            end: ev.end,
-            allDay: !ev.start.getHours || (ev.end - ev.start) % (24 * 60 * 60 * 1000) === 0,
-            description: ev.description,
-            location: ev.location
-          });
-        }
-      }
-    }
+    const events = Object.values(data)
+      .filter((entry) => entry && entry.type === 'VEVENT')
+      .map((event) => ({
+        title: event.summary,
+        start: event.start,
+        end: event.end,
+        allDay: !event.start?.getHours || (event.end - event.start) % (24 * 60 * 60 * 1000) === 0,
+        description: event.description,
+        location: event.location
+      }));
 
     if (!response.data || !String(response.data).includes('BEGIN:VCALENDAR')) {
       return res.status(422).json({ message: 'הקישור לא מחזיר קובץ iCal תקין (BEGIN:VCALENDAR חסר).' });

@@ -10,6 +10,9 @@
     
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <!-- Custom Config for Tailwind -->
     <script>
@@ -39,6 +42,7 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .leaflet-container { z-index: 10 !important; font-family: inherit; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen antialiased">
@@ -116,6 +120,18 @@
                     </div>
                 </div>
 
+                <div class="mb-8 bg-white border border-slate-200 rounded-xl p-4">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+                        <h2 class="text-lg font-bold text-slate-800">מיקום העסק במפה</h2>
+                        <div class="flex items-center gap-2">
+                            <button id="save-location-btn" class="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" type="button">שמור מיקום</button>
+                        </div>
+                    </div>
+                    <p id="location-feedback" class="text-sm text-slate-500 mb-3">אפשר ללחוץ על המפה כדי להציב או לעדכן נעיצה.</p>
+                    <p class="text-xs text-slate-500 mb-3">קואורדינטות: <span id="coordinates-value">-</span></p>
+                    <div id="business-location-map" class="w-full h-[320px] rounded-lg border border-slate-200"></div>
+                </div>
+
                 <h2 class="text-xl font-bold text-slate-800 mb-4">תיקי רישוי ופריטים</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-right">
@@ -151,6 +167,8 @@
         </div>
     </footer>
 
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="js/pages/business-details/index.js"></script>
 </body>
 </html>
