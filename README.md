@@ -10,7 +10,7 @@ A comprehensive backend system for managing business licensing and on-site inspe
 *   **PDF Generation**: Automated generation of Hebrew inspection reports using **Puppeteer** (supports RTL and Hebrew fonts).
 *   **AI Integration**: **Google Gemini AI** integration to automatically analyze inspection findings and generate risk assessments.
 *   **Inspection Catalog**: Pre-seeded database with 120+ common legal defects (ליקויים) for standardized reporting.
-*   **Cloud Ready**: Dockerized application optimized for deployment on **Railway**.
+*   **Cloud Ready**: Dockerized application optimized for deployment on **Render**.
 
 ## 🛠️ Tech Stack
 
@@ -20,7 +20,7 @@ A comprehensive backend system for managing business licensing and on-site inspe
 *   **Authentication**: JSON Web Tokens (JWT) & Bcrypt
 *   **PDF Engine**: Puppeteer (Headless Chrome)
 *   **AI**: Google Generative AI SDK (Gemini)
-*   **Deployment**: Docker
+*   **Deployment**: Docker (Render)
 
 ## ⚙️ Prerequisites
 
@@ -76,16 +76,44 @@ npm run dev
 
 The server will start on `http://localhost:8080`.
 
-## 🚂 Deployment (Railway)
+## ☁️ Deployment (Render)
 
-This project is configured for deployment on **Railway** using Docker. Railway automatically detects the `Dockerfile` and builds the environment with the necessary fonts for Puppeteer.
+This project is configured for deployment on **Render** using Docker.
 
-1.  Push your code to GitHub.
-2.  Log in to Railway and create a **New Project** > **Deploy from GitHub repo**.
-3.  Select this repository.
-4.  Go to **Variables** and add: `JWT_SECRET`, `GEMINI_API_KEY`, and `NODE_ENV=production`.
-5.  **Database**: You can add a PostgreSQL service within Railway. Railway will automatically inject the `DATABASE_URL` variable into your app service.
-6.  Deploy!
+### Option A: One-click via Blueprint (`render.yaml`)
+
+1. Push your code to GitHub.
+2. In Render, choose **New +** → **Blueprint**.
+3. Select this repository.
+4. Render reads `render.yaml` and creates the service automatically.
+5. Fill missing secret env vars in Render dashboard (see list below).
+
+### Option B: Manual Web Service
+
+1. Push your code to GitHub.
+2. In Render, choose **New +** → **Web Service**.
+3. Connect this repo.
+4. Set **Environment** to `Docker`.
+5. Set plan to `Free` (or paid if you want no sleep).
+6. Set health check path to `/`.
+
+### Required Environment Variables (Render)
+
+Add these in **Service → Environment**:
+
+- `NODE_ENV=production`
+- `DATABASE_URL` (Neon/Postgres connection string)
+- `JWT_SECRET` (strong random secret)
+- `JWT_EXPIRES_IN=1d`
+- `GEMINI_API_KEY` (optional if AI features are used)
+- `GOOGLE_MAPS_API_KEY` (for map key endpoint)
+- `DEFAULT_ICAL_URL` (optional; default calendar feed)
+
+### Notes
+
+- Free plan services may sleep after inactivity.
+- Render automatically provides `PORT`, and the app already listens to `process.env.PORT`.
+- This repo includes `.dockerignore` to keep deployments lighter and faster.
 
 ## 📚 API Documentation
 
