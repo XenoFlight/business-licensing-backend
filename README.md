@@ -26,7 +26,7 @@ A comprehensive backend system for managing business licensing and on-site inspe
 
 *   Node.js (v18+)
 *   PostgreSQL Database (Local or Cloud like Neon/Supabase)
-*   Google Gemini API Key (for AI features)
+*   (Optional) Google Gemini API Key (for AI features)
 
 ## 📥 Installation
 
@@ -55,7 +55,7 @@ A comprehensive backend system for managing business licensing and on-site inspe
     JWT_SECRET=your_super_secret_key_here
     JWT_EXPIRES_IN=12h
 
-    # AI Service
+    # AI Service (Optional - required only if you enable AI analysis)
     GEMINI_API_KEY=your_google_gemini_api_key
     ```
 
@@ -105,8 +105,7 @@ Add these in **Service → Environment**:
 - `DATABASE_URL` (Neon/Postgres connection string)
 - `JWT_SECRET` (strong random secret)
 - `JWT_EXPIRES_IN=1d`
-- `GEMINI_API_KEY` (optional if AI features are used)
-- `GOOGLE_MAPS_API_KEY` (for map key endpoint)
+- `GEMINI_API_KEY` (optional; add later when enabling AI report analysis)
 - `DEFAULT_ICAL_URL` (optional; default calendar feed)
 
 ### Notes

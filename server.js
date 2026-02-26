@@ -5,11 +5,6 @@ require('./models'); // טעינת המודלים והקשרים (Load models an
 
 const PORT = process.env.PORT || 8080;
 
-// Endpoint to serve the API key to the frontend
-app.get('/api/config/google-maps', (req, res) => {
-  res.json({ key: process.env.GOOGLE_MAPS_API_KEY });
-});
-
 // פונקציה להפעלת השרת
 // Function to start the server
 const startServer = async () => {
