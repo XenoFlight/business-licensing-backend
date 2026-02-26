@@ -25,26 +25,66 @@ const startServer = async () => {
     await connectDB();
 
     // 2. סנכרון המודלים מול מסד הנתונים (יצירת טבלאות אם לא קיימות)
-    // Before we let Sequelize perform its automatic ALTERs, ensure the "status" column
-    // can safely be converted to an ENUM without tripping the default-cast bug.
-    // The error we saw (`default for column "status" cannot be cast automatically…`)
-    // happens when Postgres tries to convert an existing default value while changing
-    // the column type. We drop the default, convert the type, and then re-add it.
+    // Normalize legacy/Hebrew status values and safely cast to enum before Sequelize ALTER.
     try {
       // ensure enum type exists (do nothing if already created)
       await sequelize.query(`
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_businesses_status') THEN
-    CREATE TYPE "public"."enum_businesses_status" AS ENUM('application_submitted','in_process','active','expired','revoked','closed');
+    CREATE TYPE "public"."enum_businesses_status" AS ENUM(
+      'application_submitted',
+      'pending_review',
+      'renewal_in_progress',
+      'approved',
+      'temporarily_permitted',
+      'rejected',
+      'closed',
+      'in_process',
+      'active',
+      'expired',
+      'revoked'
+    );
   END IF;
 END
 $$;
       `);
 
+      await sequelize.query(`ALTER TYPE "public"."enum_businesses_status" ADD VALUE IF NOT EXISTS 'pending_review';`);
+      await sequelize.query(`ALTER TYPE "public"."enum_businesses_status" ADD VALUE IF NOT EXISTS 'renewal_in_progress';`);
+      await sequelize.query(`ALTER TYPE "public"."enum_businesses_status" ADD VALUE IF NOT EXISTS 'approved';`);
+      await sequelize.query(`ALTER TYPE "public"."enum_businesses_status" ADD VALUE IF NOT EXISTS 'temporarily_permitted';`);
+      await sequelize.query(`ALTER TYPE "public"."enum_businesses_status" ADD VALUE IF NOT EXISTS 'rejected';`);
+
       // attempt safe migration of the column if necessary
       await sequelize.query(`ALTER TABLE "businesses" ALTER COLUMN status DROP DEFAULT;`);
-      await sequelize.query(`ALTER TABLE "businesses" ALTER COLUMN status TYPE "public"."enum_businesses_status" USING (status::text::"public"."enum_businesses_status");`);
+
+      await sequelize.query(`
+        ALTER TABLE "businesses"
+        ALTER COLUMN status TYPE "public"."enum_businesses_status"
+        USING (
+          CASE
+            WHEN status IS NULL OR btrim(status::text) = '' THEN 'application_submitted'
+            WHEN status::text IN ('application_submitted','pending_review','renewal_in_progress','approved','temporarily_permitted','rejected','closed','in_process','active','expired','revoked') THEN
+              CASE
+                WHEN status::text = 'in_process' THEN 'pending_review'
+                WHEN status::text = 'active' THEN 'approved'
+                WHEN status::text = 'expired' THEN 'renewal_in_progress'
+                WHEN status::text = 'revoked' THEN 'rejected'
+                ELSE status::text
+              END
+            WHEN status::text IN ('פעיל','רישיון','רישיון בתוקף','לצמיתות','רישוין תקופתי') THEN 'approved'
+            WHEN status::text IN ('רישיון זמני','היתר זמני') THEN 'temporarily_permitted'
+            WHEN status::text IN ('בטיפול','בהמתנה','לידיעה','תיק פיקוח') THEN 'pending_review'
+            WHEN status::text IN ('בתהליך חידוש','חידוש') THEN 'renewal_in_progress'
+            WHEN status::text IN ('נדחה') THEN 'rejected'
+            WHEN status::text IN ('סגור') THEN 'closed'
+            WHEN status::text IN ('לא הוגשה בקשה','בקשה מקוונת') THEN 'application_submitted'
+            ELSE 'application_submitted'
+          END::"public"."enum_businesses_status"
+        );
+      `);
+
       await sequelize.query(`ALTER TABLE "businesses" ALTER COLUMN status SET DEFAULT 'application_submitted';`);
     } catch (enumErr) {
       // ignore errors; sync below will still try its own changes if needed

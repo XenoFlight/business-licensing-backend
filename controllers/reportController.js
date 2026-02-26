@@ -1,5 +1,5 @@
 const Report = require('../models/Report');
-const Business = require('../models/business');
+const Business = require('../models/Business');
 const User = require('../models/User');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { generateReportPDF } = require('../services/pdfService');

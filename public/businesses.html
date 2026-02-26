@@ -1,32 +1,28 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>רשימת עסקים | מערכת רישוי עסקים</title>
-    
-    <!-- Tailwind CSS -->
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Custom Config for Tailwind -->
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                        sans: [''-apple-system'', ''BlinkMacSystemFont'', ''Segoe UI'', ''Roboto'', ''Helvetica'', ''Arial'', ''sans-serif''],
                     },
                     colors: {
                         brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            900: '#0c4a6e',
+                            50: ''#f0f9ff'',
+                            100: ''#e0f2fe'',
+                            500: ''#0ea5e9'',
+                            600: ''#0284c7'',
+                            700: ''#0369a1'',
+                            900: ''#0c4a6e'',
                         }
                     }
                 }
@@ -39,16 +35,13 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .leaflet-container { z-index: 10 !important; font-family: inherit; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen antialiased">
 
-    <!-- Header / Navbar -->
     <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <!-- Right side: Logo & Brand -->
                 <div class="flex items-center gap-3">
                     <div class="bg-brand-100 text-brand-700 p-2 rounded-lg">
                         <i class="fa-solid fa-building-shield text-xl"></i>
@@ -59,7 +52,6 @@
                     </div>
                 </div>
 
-                <!-- Center: Navigation -->
                 <nav class="hidden md:flex space-x-reverse space-x-2">
                     <a href="dashboard.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors flex items-center gap-2">
                         <i class="fa-solid fa-chart-pie"></i> לוח בקרה
@@ -73,7 +65,6 @@
                     <span id="admin-link-placeholder"></span>
                 </nav>
 
-                <!-- Left side: User Profile & Actions -->
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2 border-r border-slate-200 pr-4">
                         <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm">
@@ -81,7 +72,7 @@
                         </div>
                         <span id="user-name" class="text-sm font-medium text-slate-700">שלום, משתמש</span>
                     </div>
-                    <button onclick="logout()" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
+                    <button id="logout-button" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> יציאה
                     </button>
                 </div>
@@ -89,25 +80,20 @@
         </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 flex-wrap gap-4">
                 <h2 class="font-bold text-slate-800 text-lg">רשימת עסקים</h2>
                 <div class="flex gap-3 items-center flex-wrap">
-                    <input type="text" id="search-input" class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 w-64" placeholder="חפש לפי שם עסק, כתובת או בעלים..." onkeyup="applyFilters()">
-                    
-                    <select id="status-filter" class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" onchange="applyFilters()">
+                    <input type="text" id="search-input" class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 w-64" placeholder="חפש לפי שם עסק, כתובת או בעלים...">
+                    <select id="status-filter" class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         <option value="">כל הסטטוסים</option>
                     </select>
-
-                    <select id="area-filter" class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" onchange="applyFilters()">
+                    <select id="area-filter" class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         <option value="">כל האזורים</option>
                     </select>
-
                     <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
-                        <input type="checkbox" id="show-closed-checkbox" onchange="applyFilters()" class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500">
+                        <input type="checkbox" id="show-closed-checkbox" class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500">
                         הצג סגורים
                     </label>
                 </div>
@@ -129,393 +115,17 @@
                 </table>
             </div>
         </div>
-
     </main>
 
-    <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center gap-2">
             <div class="text-sm text-slate-500 font-medium">
                 &copy; 2026 מערכת רישוי עסקים - מועצה אזורית יואב. כל הזכויות שמורות.
             </div>
-            <div class="text-xs text-slate-400">
-                פותח עבור מחלקת רישוי עסקים
-            </div>
+            <div class="text-xs text-slate-400">פותח עבור מחלקת רישוי עסקים</div>
         </div>
     </footer>
 
-    <script>
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-        
-        if (!token) {
-            window.location.href = 'login.html';
-        }
-
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                document.getElementById('user-name').textContent = `שלום, ${user.fullName}`;
-                if (user.role === 'admin') {
-                    const adminLink = document.createElement('a');
-                    adminLink.href = 'admin-dashboard.html';
-                    adminLink.innerHTML = '<i class="fa-solid fa-user-shield"></i> פאנל ניהול';
-                    adminLink.className = 'px-3 py-2 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 transition-colors flex items-center gap-2';
-                    document.getElementById('admin-link-placeholder').appendChild(adminLink);
-                }
-            } catch (e) {
-                console.error("Failed to parse user data from localStorage, logging out.", e);
-                logout();
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-
-        let businessesData = [];
-
-        async function fetchBusinesses() {
-            try {
-                const response = await fetch('/api/businesses', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                if (response.status === 401) {
-                    logout();
-                    return;
-                }
-
-                const businesses = await response.json();
-                businessesData = businesses;
-                const tbody = document.querySelector('#business-table tbody');
-                tbody.innerHTML = '';
-
-                if (businesses.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500">לא נמצאו עסקים במערכת</td></tr>';
-                    return;
-                }
-
-                // Group businesses by name
-                const groupedBusinesses = {};
-                const allStatuses = new Set();
-                const allAreas = new Set();
-
-                businesses.forEach(biz => {
-                    const name = biz.businessName || 'ללא שם';
-                    if (!groupedBusinesses[name]) {
-                        groupedBusinesses[name] = {
-                            name: name,
-                            address: biz.address || `${biz.street || ''} ${biz.houseNumber || ''}, ${biz.businessArea || ''}`.replace(/^ , /, '').replace(/, $/, ''),
-                            owner: biz.ownerName || biz.businessOwner || '',
-                            items: new Set(),
-                            mainId: biz.id, // Keep one ID for actions like "New Inspection"
-                            statuses: new Set(),
-                            area: biz.businessArea || ''
-                        };
-                    }
-                    const item = (biz.LicensingItem && biz.LicensingItem.name) ? biz.LicensingItem.name : biz.occupationItem || '-';
-                    groupedBusinesses[name].items.add(item);
-                    
-                    if (biz.status) {
-                        groupedBusinesses[name].statuses.add(biz.status);
-                        allStatuses.add(biz.status);
-                    }
-                    if (biz.businessArea) {
-                        allAreas.add(biz.businessArea);
-                    }
-                });
-
-                // Populate Filters
-                const statusSelect = document.getElementById('status-filter');
-                const areaSelect = document.getElementById('area-filter');
-                
-                Array.from(allStatuses).sort().forEach(status => {
-                    const option = document.createElement('option');
-                    option.value = status;
-                    option.textContent = status;
-                    statusSelect.appendChild(option);
-                });
-
-                Array.from(allAreas).sort().forEach(area => {
-                    const option = document.createElement('option');
-                    option.value = area;
-                    option.textContent = area;
-                    areaSelect.appendChild(option);
-                });
-
-                Object.values(groupedBusinesses).forEach(group => {
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-50 transition-colors";
-                    const itemsDisplay = Array.from(group.items).join(', ');
-                    const statusesArray = Array.from(group.statuses);
-                    // Consider closed if ALL statuses are 'סגור'
-                    const isFullyClosed = statusesArray.length > 0 && statusesArray.every(s => s === 'סגור');
-
-                    // Store data for filtering
-                    row.setAttribute('data-statuses', JSON.stringify(statusesArray));
-                    row.setAttribute('data-area', group.area);
-                    row.setAttribute('data-closed', isFullyClosed);
-                    
-                    row.innerHTML = `
-                        <td class="px-6 py-4 font-medium text-slate-900">${group.name}</td>
-                        <td class="px-6 py-4 text-slate-600">${group.address}</td>
-                        <td class="px-6 py-4 text-slate-600">${group.owner}</td>
-                        <td class="px-6 py-4 text-slate-600">${itemsDisplay}</td>
-                        <td class="px-6 py-4 flex gap-2">
-                            <a class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 px-3 py-1.5 rounded-md transition-colors font-medium" href="business-details.html?name=${encodeURIComponent(group.name)}">פרטים</a>
-                            <a class="text-xs bg-green-50 text-green-700 hover:bg-green-100 px-3 py-1.5 rounded-md transition-colors font-medium" href="inspection.html?businessId=${group.mainId}">ביקורת</a>
-                            <a class="text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1.5 rounded-md transition-colors font-medium" href="reports-history.html?businessId=${group.mainId}">היסטוריה</a>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-
-            } catch (error) {
-                console.error('Error:', error);
-                document.querySelector('#business-table tbody').innerHTML = 
-                    '<tr><td colspan="5" class="px-6 py-8 text-center text-red-500">שגיאה בטעינת נתונים</td></tr>';
-            }
-        }
-
-        function applyFilters() {
-            const searchText = document.getElementById('search-input').value.toLowerCase();
-            const statusFilter = document.getElementById('status-filter').value;
-            const areaFilter = document.getElementById('area-filter').value;
-            const showClosed = document.getElementById('show-closed-checkbox').checked;
-
-            const rows = document.querySelectorAll('#business-table tbody tr');
-
-            rows.forEach(row => {
-                // 1. Text Search
-                const text = row.textContent.toLowerCase();
-                const matchesText = text.indexOf(searchText) > -1;
-
-                // 2. Status Filter
-                const rowStatuses = JSON.parse(row.getAttribute('data-statuses') || '[]');
-                const matchesStatus = !statusFilter || rowStatuses.includes(statusFilter);
-
-                // 3. Area Filter
-                const rowArea = row.getAttribute('data-area');
-                const matchesArea = !areaFilter || rowArea === areaFilter;
-
-                // 4. Closed Filter
-                const isClosed = row.getAttribute('data-closed') === 'true';
-                const matchesClosed = showClosed || !isClosed;
-
-                if (matchesText && matchesStatus && matchesArea && matchesClosed) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-
-        fetchBusinesses();
-    </script>
-</body>
-</html>
-                    </div>
-                </div>
-            </div>
-            <div class="table-responsive">
-                <table id="business-table" class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>שם העסק</th>
-                            <th>כתובת</th>
-                            <th>בעלים</th>
-                            <th>פריט רישוי</th>
-                            <th>פעולות</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="5" class="text-center py-4">טוען נתונים...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <footer class="bg-white text-center py-3 border-top mt-auto text-muted small">
-        &copy; 2026 מערכת רישוי עסקים - מועצה אזורית. כל הזכויות שמורות.
-    </footer>
-
-    <script>
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-        
-        if (!token) {
-            window.location.href = 'login.html';
-        }
-
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                document.getElementById('user-name').textContent = `שלום, ${user.fullName}`;
-                if (user.role === 'admin') {
-                    const adminLink = document.createElement('a');
-                    adminLink.href = 'admin-dashboard.html';
-                    adminLink.textContent = 'פאנל ניהול';
-                    adminLink.className = 'nav-link text-primary';
-                    document.getElementById('admin-link-placeholder').appendChild(adminLink);
-                }
-            } catch (e) {
-                console.error("Failed to parse user data from localStorage, logging out.", e);
-                logout();
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-
-        let businessesData = [];
-
-        async function fetchBusinesses() {
-            try {
-                const response = await fetch('/api/businesses', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                if (response.status === 401) {
-                    logout();
-                    return;
-                }
-
-                const businesses = await response.json();
-                businessesData = businesses;
-                const tbody = document.querySelector('#business-table tbody');
-                tbody.innerHTML = '';
-
-                if (businesses.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">לא נמצאו עסקים במערכת</td></tr>';
-                    return;
-                }
-
-                // Group businesses by name
-                const groupedBusinesses = {};
-                const allStatuses = new Set();
-                const allAreas = new Set();
-
-                businesses.forEach(biz => {
-                    const name = biz.businessName || 'ללא שם';
-                    if (!groupedBusinesses[name]) {
-                        groupedBusinesses[name] = {
-                            name: name,
-                            address: biz.address || `${biz.street || ''} ${biz.houseNumber || ''}, ${biz.businessArea || ''}`.replace(/^ , /, '').replace(/, $/, ''),
-                            owner: biz.ownerName || biz.businessOwner || '',
-                            items: new Set(),
-                            mainId: biz.id, // Keep one ID for actions like "New Inspection"
-                            statuses: new Set(),
-                            area: biz.businessArea || ''
-                        };
-                    }
-                    const item = (biz.LicensingItem && biz.LicensingItem.name) ? biz.LicensingItem.name : biz.occupationItem || '-';
-                    groupedBusinesses[name].items.add(item);
-                    
-                    if (biz.status) {
-                        groupedBusinesses[name].statuses.add(biz.status);
-                        allStatuses.add(biz.status);
-                    }
-                    if (biz.businessArea) {
-                        allAreas.add(biz.businessArea);
-                    }
-                });
-
-                // Populate Filters
-                const statusSelect = document.getElementById('status-filter');
-                const areaSelect = document.getElementById('area-filter');
-                
-                Array.from(allStatuses).sort().forEach(status => {
-                    const option = document.createElement('option');
-                    option.value = status;
-                    option.textContent = status;
-                    statusSelect.appendChild(option);
-                });
-
-                Array.from(allAreas).sort().forEach(area => {
-                    const option = document.createElement('option');
-                    option.value = area;
-                    option.textContent = area;
-                    areaSelect.appendChild(option);
-                });
-
-                Object.values(groupedBusinesses).forEach(group => {
-                    const row = document.createElement('tr');
-                    const itemsDisplay = Array.from(group.items).join(', ');
-                    const statusesArray = Array.from(group.statuses);
-                    // Consider closed if ALL statuses are 'סגור'
-                    const isFullyClosed = statusesArray.length > 0 && statusesArray.every(s => s === 'סגור');
-
-                    // Store data for filtering
-                    row.setAttribute('data-statuses', JSON.stringify(statusesArray));
-                    row.setAttribute('data-area', group.area);
-                    row.setAttribute('data-closed', isFullyClosed);
-                    
-                    row.innerHTML = `
-                        <td><strong>${group.name}</strong></td>
-                        <td>${group.address}</td>
-                        <td>${group.owner}</td>
-                        <td>${itemsDisplay}</td>
-                        <td>
-                            <a class="btn btn-sm btn-outline-primary" href="business-details.html?name=${encodeURIComponent(group.name)}">פרטים</a>
-                            <a class="btn btn-sm btn-outline-success" href="inspection.html?businessId=${group.mainId}">ביקורת</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="reports-history.html?businessId=${group.mainId}">היסטוריה</a>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-
-            } catch (error) {
-                console.error('Error:', error);
-                document.querySelector('#business-table tbody').innerHTML = 
-                    '<tr><td colspan="5" class="text-center text-danger">שגיאה בטעינת נתונים</td></tr>';
-            }
-        }
-
-        function applyFilters() {
-            const searchText = document.getElementById('search-input').value.toLowerCase();
-            const statusFilter = document.getElementById('status-filter').value;
-            const areaFilter = document.getElementById('area-filter').value;
-            const showClosed = document.getElementById('show-closed-checkbox').checked;
-
-            const rows = document.querySelectorAll('#business-table tbody tr');
-
-            rows.forEach(row => {
-                // 1. Text Search
-                const text = row.textContent.toLowerCase();
-                const matchesText = text.indexOf(searchText) > -1;
-
-                // 2. Status Filter
-                const rowStatuses = JSON.parse(row.getAttribute('data-statuses') || '[]');
-                const matchesStatus = !statusFilter || rowStatuses.includes(statusFilter);
-
-                // 3. Area Filter
-                const rowArea = row.getAttribute('data-area');
-                const matchesArea = !areaFilter || rowArea === areaFilter;
-
-                // 4. Closed Filter
-                const isClosed = row.getAttribute('data-closed') === 'true';
-                const matchesClosed = showClosed || !isClosed;
-
-                if (matchesText && matchesStatus && matchesArea && matchesClosed) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-
-        fetchBusinesses();
-    </script>
+    <script type="module" src="js/pages/businesses/index.js"></script>
 </body>
 </html>

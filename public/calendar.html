@@ -126,6 +126,7 @@
                     <input type="text" id="ical-url" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="הדבק כאן קישור iCal (לדוגמה: https://outlook.office365.com/.../calendar.ics)">
                     <button class="bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700 transition-colors" type="button" onclick="loadICal()">טען יומן</button>
                 </div>
+                <p id="ical-feedback" class="mt-3 text-sm text-slate-500"></p>
             </div>
         </div>
 
@@ -176,6 +177,37 @@
             window.location.href = 'login.html';
         }
 
+        const ICAL_URL_PATTERN = /\.ics(?:$|\?)/i;
+
+        function setIcalFeedback(message, type = 'info') {
+            const feedback = document.getElementById('ical-feedback');
+            if (!feedback) return;
+
+            feedback.textContent = message || '';
+            feedback.className = 'mt-3 text-sm';
+
+            if (type === 'error') {
+                feedback.classList.add('text-red-600');
+                return;
+            }
+
+            if (type === 'success') {
+                feedback.classList.add('text-emerald-600');
+                return;
+            }
+
+            feedback.classList.add('text-slate-500');
+        }
+
+        function validateIcalUrl(url) {
+            try {
+                const parsed = new URL(url);
+                return parsed.protocol === 'https:' && ICAL_URL_PATTERN.test(parsed.pathname + parsed.search);
+            } catch (error) {
+                return false;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -193,27 +225,42 @@
         });
 
         async function loadICal() {
-            const url = document.getElementById('ical-url').value;
+            const url = document.getElementById('ical-url').value.trim();
             const button = document.querySelector('#ical-url + button');
-            if (!url) return alert('אנא הזן כתובת iCal תקינה');
+
+            if (!url) {
+                setIcalFeedback('יש להזין קישור iCal.', 'error');
+                return;
+            }
+
+            if (!validateIcalUrl(url)) {
+                setIcalFeedback('הקישור אינו תקין. יש להזין כתובת HTTPS שמכילה קובץ .ics', 'error');
+                return;
+            }
+
+            setIcalFeedback('טוען אירועים מהיומן...', 'info');
             button.disabled = true;
             button.textContent = 'טוען...';
+
             try {
                 const response = await fetch('/api/calendar/ical', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ url })
                 });
+
                 if (response.ok) {
                     const events = await response.json();
                     window.calendarInstance.removeAllEvents();
                     window.calendarInstance.addEventSource(events);
+                    setIcalFeedback(`נטענו ${events.length} אירועים מהיומן.`, 'success');
                 } else {
-                    alert('שגיאה בטעינת היומן.');
+                    const errorPayload = await response.json().catch(() => ({}));
+                    setIcalFeedback(errorPayload.message || 'שגיאה בטעינת היומן.', 'error');
                 }
             } catch (err) {
                 console.error(err);
-                alert('שגיאת תקשורת. נסה שוב מאוחר יותר.');
+                setIcalFeedback('שגיאת תקשורת. נסה שוב מאוחר יותר.', 'error');
             } finally {
                 button.disabled = false;
                 button.textContent = 'טען יומן';

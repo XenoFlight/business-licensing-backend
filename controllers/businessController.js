@@ -1,4 +1,16 @@
 const { Business, LicensingItem, Report, User } = require('../models');
+const { normalizeBusinessStatus, getBusinessStatusLabel } = require('../utils/businessStatus');
+
+function serializeBusinessWithStatus(business) {
+  const plainBusiness = business?.toJSON ? business.toJSON() : business;
+  const normalizedStatus = normalizeBusinessStatus(plainBusiness?.status) || 'application_submitted';
+
+  return {
+    ...plainBusiness,
+    status: normalizedStatus,
+    statusLabel: getBusinessStatusLabel(normalizedStatus),
+  };
+}
 
 // @desc    קבלת כל העסקים
 // @route   GET /api/businesses
@@ -22,7 +34,8 @@ exports.getAllBusinesses = async (req, res) => {
       // }],
       order: [['createdAt', 'DESC']]
     });
-    res.json(businesses);
+    const normalizedBusinesses = businesses.map(serializeBusinessWithStatus);
+    res.json(normalizedBusinesses);
   } catch (error) {
     console.error('Error fetching businesses:', error);
     res.status(500).json({ message: 'שגיאת שרת בקבלת רשימת עסקים', error: error.message });
@@ -42,7 +55,7 @@ exports.getBusinessById = async (req, res) => {
     });
 
     if (business) {
-      res.json(business);
+      res.json(serializeBusinessWithStatus(business));
     } else {
       res.status(404).json({ message: 'עסק לא נמצא' });
     }
@@ -87,7 +100,18 @@ exports.createBusiness = async (req, res) => {
       }
     }
 
-    const newBusiness = await Business.create(req.body);
+    const payload = { ...req.body };
+
+    if (Object.prototype.hasOwnProperty.call(payload, 'status')) {
+      const normalizedStatus = normalizeBusinessStatus(payload.status);
+      if (!normalizedStatus) {
+        return res.status(400).json({ message: 'סטטוס עסק לא תקין' });
+      }
+
+      payload.status = normalizedStatus;
+    }
+
+    const newBusiness = await Business.create(payload);
     
     res.status(201).json({
       message: 'העסק נוצר בהצלחה',
@@ -104,10 +128,20 @@ exports.createBusiness = async (req, res) => {
 // @access  Private (Manager)
 exports.updateBusiness = async (req, res) => {
   try {
+    const payload = { ...req.body };
+    if (Object.prototype.hasOwnProperty.call(payload, 'status')) {
+      const normalizedStatus = normalizeBusinessStatus(payload.status);
+      if (!normalizedStatus) {
+        return res.status(400).json({ message: 'סטטוס עסק לא תקין' });
+      }
+
+      payload.status = normalizedStatus;
+    }
+
     const business = await Business.findByPk(req.params.id);
 
     if (business) {
-      await business.update(req.body);
+      await business.update(payload);
       res.json({
         message: 'פרטי העסק עודכנו בהצלחה',
         business: business
@@ -126,14 +160,19 @@ exports.updateBusiness = async (req, res) => {
 exports.updateBusinessStatus = async (req, res) => {
   try {
     const { status } = req.body;
+    const normalizedStatus = normalizeBusinessStatus(status);
+    if (!normalizedStatus) {
+      return res.status(400).json({ message: 'סטטוס עסק לא תקין' });
+    }
+
     const business = await Business.findByPk(req.params.id);
 
     if (business) {
-      business.status = status;
+      business.status = normalizedStatus;
       await business.save();
       res.json({
         message: 'סטטוס העסק עודכן בהצלחה',
-        business: business
+        business: serializeBusinessWithStatus(business)
       });
     } else {
       res.status(404).json({ message: 'עסק לא נמצא' });

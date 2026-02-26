@@ -9,6 +9,7 @@ const businessRoutes = require('./routes/businessRoutes');
 const defectRoutes = require('./routes/defectRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 
 // אתחול האפליקציה
 // Initialize App
@@ -23,9 +24,9 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com"],
+      "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
       "img-src": ["'self'", "data:", "https://*.openstreetmap.org", "https://unpkg.com"],
-      "style-src": ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://fonts.googleapis.com"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
       "script-src-attr": ["'self'", "'unsafe-inline'"],
       "connect-src": ["'self'", "https://nominatim.openstreetmap.org", "https:*"], // Allow fetching from any HTTPS source for iCal
     },
@@ -60,6 +61,7 @@ app.use('/api/businesses', businessRoutes);
 app.use('/api/defects', defectRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/reports', reportRoutes);
 
 // טיפול בשגיאות 404 (נתיב לא נמצא)
 // 404 Error Handling

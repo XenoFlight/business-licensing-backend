@@ -87,7 +87,7 @@
                         </div>
                         <span id="user-name" class="text-sm font-medium text-slate-700">שלום, משתמש</span>
                     </div>
-                    <button onclick="logout()" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
+                    <button id="logout-button" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> יציאה
                     </button>
                 </div>
@@ -97,126 +97,93 @@
 
     <!-- Main Content Area -->
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        
-        <!-- Welcome Section -->
-        <div class="mb-8">
-            <h1 class="text-2xl font-bold text-slate-900">סקירת נתונים יומית</h1>
-            <p class="text-slate-500 text-sm mt-1">ברוכים הבאים למערכת רישוי עסקים. כאן תוכלו לראות סיכום של הנתונים במערכת.</p>
-        </div>
+        <section class="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-8 md:p-10 mb-8">
+            <div class="absolute -left-20 -top-20 w-56 h-56 rounded-full bg-brand-500/30 blur-3xl"></div>
+            <div class="absolute -right-20 -bottom-20 w-56 h-56 rounded-full bg-sky-300/20 blur-3xl"></div>
+            <div class="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+                <div>
+                    <p class="text-brand-100 text-sm font-medium mb-2">לוח בקרה מרכזי</p>
+                    <h1 class="text-3xl md:text-4xl font-bold tracking-tight">תמונת מצב לרישוי עסקים</h1>
+                    <p class="text-slate-200 mt-3 text-sm md:text-base">גישה מהירה לביקורות, עסקים, מפה ויומן — עם מדדי סטטוס עדכניים בזמן אמת.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="businesses.html" class="px-4 py-2.5 rounded-xl bg-white text-slate-900 font-semibold text-sm hover:bg-slate-100 transition-colors">לרשימת העסקים</a>
+                    <a href="inspection.html" class="px-4 py-2.5 rounded-xl bg-brand-500 text-white font-semibold text-sm hover:bg-brand-600 transition-colors">ביקורת חדשה</a>
+                </div>
+            </div>
+        </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- Stats Cards -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card">
-                <div class="flex justify-between items-start mb-4">
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <article class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 stat-card">
+                <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-slate-500">סה"כ עסקים</p>
-                        <h3 class="text-3xl font-bold text-slate-900 mt-1" id="total-businesses">-</h3>
+                        <p class="text-sm text-slate-500">סה״כ עסקים</p>
+                        <h2 id="total-businesses" class="text-4xl font-bold text-slate-900 mt-1">-</h2>
                     </div>
-                    <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                        <i class="fa-solid fa-store text-xl"></i>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-store text-lg"></i>
                     </div>
                 </div>
-                <div class="text-xs text-slate-400">רשומים במערכת</div>
-            </div>
+            </article>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card">
-                <div class="flex justify-between items-start mb-4">
+            <article class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 stat-card">
+                <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-slate-500">עסקים פעילים</p>
-                        <h3 class="text-3xl font-bold text-green-600 mt-1" id="active-businesses">-</h3>
+                        <p class="text-sm text-slate-500">עסקים פעילים</p>
+                        <h2 id="active-businesses" class="text-4xl font-bold text-emerald-600 mt-1">-</h2>
                     </div>
-                    <div class="p-3 bg-green-50 text-green-600 rounded-lg">
-                        <i class="fa-solid fa-check-circle text-xl"></i>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <i class="fa-solid fa-circle-check text-lg"></i>
                     </div>
                 </div>
-                <div class="text-xs text-slate-400">בעלי רישיון בתוקף</div>
-            </div>
+            </article>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card">
-                <div class="flex justify-between items-start mb-4">
+            <article class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 stat-card">
+                <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-slate-500">בטיפול / חידוש</p>
-                        <h3 class="text-3xl font-bold text-amber-500 mt-1" id="pending-businesses">-</h3>
+                        <p class="text-sm text-slate-500">בטיפול / חידוש</p>
+                        <h2 id="pending-businesses" class="text-4xl font-bold text-amber-500 mt-1">-</h2>
                     </div>
-                    <div class="p-3 bg-amber-50 text-amber-600 rounded-lg">
-                        <i class="fa-solid fa-clock text-xl"></i>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <i class="fa-solid fa-hourglass-half text-lg"></i>
                     </div>
                 </div>
-                <div class="text-xs text-slate-400">ממתינים לטיפול</div>
-            </div>
-        </div>
+            </article>
+        </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Quick Actions -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                    <h2 class="font-bold text-slate-800">פעולות מהירות</h2>
+        <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <a href="inspection.html" class="group bg-white rounded-2xl border border-slate-200 hover:border-brand-300 shadow-sm p-5 transition-all">
+                <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center mb-4 group-hover:bg-brand-200">
+                    <i class="fa-solid fa-clipboard-check"></i>
                 </div>
-                <div class="p-6 grid gap-4">
-                    <a href="inspection.html" class="flex items-center p-4 border border-slate-200 rounded-xl hover:border-brand-300 hover:bg-brand-50 transition-all group">
-                        <div class="bg-brand-100 text-brand-600 p-3 rounded-lg group-hover:bg-brand-200 transition-colors">
-                            <i class="fa-solid fa-clipboard-check text-xl"></i>
-                        </div>
-                        <div class="mr-4">
-                            <h3 class="font-bold text-slate-800 group-hover:text-brand-700">ביצוע ביקורת חדשה</h3>
-                            <p class="text-sm text-slate-500">פתיחת טופס ביקורת לעסק קיים או חדש</p>
-                        </div>
-                    </a>
-                    
-                    <a href="map.html" class="flex items-center p-4 border border-slate-200 rounded-xl hover:border-brand-300 hover:bg-brand-50 transition-all group">
-                        <div class="bg-slate-100 text-slate-600 p-3 rounded-lg group-hover:bg-slate-200 transition-colors">
-                            <i class="fa-solid fa-map-location-dot text-xl"></i>
-                        </div>
-                        <div class="mr-4">
-                            <h3 class="font-bold text-slate-800 group-hover:text-brand-700">צפייה במפת העסקים</h3>
-                            <p class="text-sm text-slate-500">תצוגה גיאוגרפית של כל העסקים במועצה</p>
-                        </div>
-                    </a>
+                <h3 class="font-bold text-slate-900">ביצוע ביקורת</h3>
+                <p class="text-sm text-slate-500 mt-1">פתיחת טופס ביקורת לעסק קיים או חדש</p>
+            </a>
 
-                    <a href="calendar.html" class="flex items-center p-4 border border-slate-200 rounded-xl hover:border-brand-300 hover:bg-brand-50 transition-all group">
-                        <div class="bg-slate-100 text-slate-600 p-3 rounded-lg group-hover:bg-slate-200 transition-colors">
-                            <i class="fa-solid fa-calendar-days text-xl"></i>
-                        </div>
-                        <div class="mr-4">
-                            <h3 class="font-bold text-slate-800 group-hover:text-brand-700">יומן ביקורות</h3>
-                            <p class="text-sm text-slate-500">צפייה בלוח הזמנים וסנכרון עם Outlook</p>
-                        </div>
-                    </a>
+            <a href="businesses.html" class="group bg-white rounded-2xl border border-slate-200 hover:border-brand-300 shadow-sm p-5 transition-all">
+                <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center mb-4 group-hover:bg-slate-200">
+                    <i class="fa-solid fa-table-list"></i>
                 </div>
-            </div>
+                <h3 class="font-bold text-slate-900">ניהול עסקים</h3>
+                <p class="text-sm text-slate-500 mt-1">חיפוש, סינון וצפייה בפרטי תיקים</p>
+            </a>
 
-            <!-- Recent Updates -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                    <h2 class="font-bold text-slate-800">עדכונים אחרונים</h2>
+            <a href="map.html" class="group bg-white rounded-2xl border border-slate-200 hover:border-brand-300 shadow-sm p-5 transition-all">
+                <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center mb-4 group-hover:bg-slate-200">
+                    <i class="fa-solid fa-map-location-dot"></i>
                 </div>
-                <div class="p-6">
-                    <ul class="space-y-4">
-                        <li class="flex gap-3 items-start">
-                            <div class="mt-1 w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
-                            <div>
-                                <p class="text-sm font-medium text-slate-800">המערכת עודכנה לאחרונה</p>
-                                <p class="text-xs text-slate-500">לפני 2 ימים</p>
-                            </div>
-                        </li>
-                        <li class="flex gap-3 items-start">
-                            <div class="mt-1 w-2 h-2 rounded-full bg-brand-500 shrink-0"></div>
-                            <div>
-                                <p class="text-sm font-medium text-slate-800">נוספה אפשרות לסנכרון יומן Outlook</p>
-                                <p class="text-xs text-slate-500">חדש במערכת</p>
-                            </div>
-                        </li>
-                        <li class="flex gap-3 items-start">
-                            <div class="mt-1 w-2 h-2 rounded-full bg-brand-500 shrink-0"></div>
-                            <div>
-                                <p class="text-sm font-medium text-slate-800">ממשק מפה חדש זמין</p>
-                                <p class="text-xs text-slate-500">שיפורי ביצועים ותצוגה</p>
-                            </div>
-                        </li>
-                    </ul>
+                <h3 class="font-bold text-slate-900">מפת עסקים</h3>
+                <p class="text-sm text-slate-500 mt-1">תצוגה גיאוגרפית ועדכון מיקום</p>
+            </a>
+
+            <a href="calendar.html" class="group bg-white rounded-2xl border border-slate-200 hover:border-brand-300 shadow-sm p-5 transition-all">
+                <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center mb-4 group-hover:bg-slate-200">
+                    <i class="fa-solid fa-calendar-days"></i>
                 </div>
-            </div>
-        </div>
+                <h3 class="font-bold text-slate-900">יומן ביקורות</h3>
+                <p class="text-sm text-slate-500 mt-1">מעקב אירועים וסנכרון iCal</p>
+            </a>
+        </section>
     </main>
 
     <!-- Footer -->
@@ -231,70 +198,6 @@
         </div>
     </footer>
 
-    <script>
-        // 1. בדיקת התחברות
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-        
-        if (!token) {
-            window.location.href = 'login.html';
-        }
-
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                document.getElementById('user-name').textContent = `שלום, ${user.fullName}`;
-                if (user.role === 'admin') {
-                    const adminLink = document.createElement('a');
-                    adminLink.href = 'admin-dashboard.html';
-                    adminLink.innerHTML = '<i class="fa-solid fa-user-shield"></i> פאנל ניהול';
-                    adminLink.className = 'px-3 py-2 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 transition-colors flex items-center gap-2';
-                    document.getElementById('admin-link-placeholder').appendChild(adminLink);
-                }
-            } catch (e) {
-                console.error("Failed to parse user data from localStorage, logging out.", e);
-                logout();
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-
-        // 2. שליפת נתונים מהשרת
-        async function fetchBusinesses() {
-            try {
-                const response = await fetch('/api/businesses', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                if (response.status === 401) {
-                    logout(); // טוקן פג תוקף
-                    return;
-                }
-
-                const businesses = await response.json();
-                
-                // Update Stats
-                document.getElementById('total-businesses').textContent = businesses.length;
-                
-                const activeCount = businesses.filter(b => b.status === 'פעיל' || b.status === 'רישיון' || b.status === 'היתר זמני').length;
-                document.getElementById('active-businesses').textContent = activeCount;
-
-                const pendingCount = businesses.filter(b => b.status && (b.status.includes('בטיפול') || b.status.includes('חידוש'))).length;
-                document.getElementById('pending-businesses').textContent = pendingCount;
-
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        // טעינה ראשונית
-        fetchBusinesses();
-    </script>
+    <script type="module" src="js/pages/dashboard/index.js"></script>
 </body>
 </html>
